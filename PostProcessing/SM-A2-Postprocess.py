@@ -387,7 +387,7 @@ ns_per_hour = np.timedelta64(1, 'h') # nanoseconds in an hour
 outputdt = delta(hours=outtimestep)
 
 timerange = np.arange(np.nanmin(data_xarray['time'].values),
-                      np.nanmax(data_xarray['time'].values)+np.timedelta64(outputdt), 
+                      np.nanmax(data_xarray['time'].values),#+np.timedelta64(outputdt), 
                       outputdt) # timerange in nanoseconds
 
 
@@ -395,6 +395,8 @@ timerange = np.arange(np.nanmin(data_xarray['time'].values),
 ##  Time Series
 # Compute the number of particles entering the polygon with an age below `thres_Age`.
 ###
+
+#timerange=timerange[:-1]
 
 labels=[]; labelsm=[]; ages=[]; ninside=[]
 
@@ -571,14 +573,6 @@ relninsideperclass = ninsideperclass/(ReleaseRate*outtimestep)*100
 # FIXME !! sum of relative fraction per classes isn't stricly equal to relative fractions  ????
 #    Shall we renormalize as a quick patch ? 
 
-'''
-print('relninsideperclass')
-print(relninsideperclass)
-
-print('relninsideperclass.sum(axis=1)')
-#print(relninsideperclass.shape)
-print(relninsideperclass.sum(axis=1))
-'''
 
 ## Patching the above ##
 relninsideperclass_ref = relninsideperclass.copy()
@@ -589,18 +583,6 @@ for i,t in enumerate(timerange):
 relninsideperclass = relninsideperclass_ref.copy()
 ##
 
-'''
-print('relninside')
-#print(relninside.shape)
-print(relninside)
-
-print('relninsideperclass.sum(axis=1)')
-#print(relninsideperclass.shape)
-print(relninsideperclass.sum(axis=1))
-
-print('relninsideperclass')
-print(relninsideperclass)
-'''
 
 risk = np.zeros((len(timerange)))
 
@@ -679,68 +661,5 @@ fig.savefig( figdir+'TS_Risk_chart.png', dpi=200)
 with open(figdir+'Risk.csv', 'w', newline='') as f:
     writer = csv.writer(f, delimiter=',')
     writer.writerows(zip(timerange,risk))
-
-############
-# For animation I'd rather suggest to use imagemagick.. producing all png would make it easier for further diffusion, in any case (gif, or display with scrollable timebar..)
-#
-# The idea would be to complete the violin and risk time series with a 'current' pointer. Then processing all images, all buileins and collecting those in such a slide show.
-#
-'''
-if not BuildAnim: 
-    raise SystemExit("You choosed to skip the animation.")
-else:
-    if polys[0] is not None:
-        apoly1=np.array(poly1)
-        ml=np.min(apoly1[:,1])
-        Ml=np.max(apoly1[:,1])
-        mL=np.min(apoly1[:,0])
-        ML=np.max(apoly1[:,0])
-        extp=[mL-(ML-mL), ML+(ML-mL), ml-(Ml-ml), Ml+(Ml-ml)]
-
-
-    from matplotlib.animation import FuncAnimation
-
-    fig = plt.figure(figsize=(15,5))
-    nexts=len(exts)
-
-    axs = []
-    scats=[]
-    scatpolys=[]
-
-    time_id = np.where(data_xarray['time'] == timerange[0]) # Indices of the data where time = 0
-
-    for i,ext in enumerate(exts):     
-        axs.append(start_axes('Zoom', fig=fig,sp=int('1'+str(nexts)+str(i+1)), extent=ext))
-        
-
-        scats.append( axs[i].scatter(data_xarray['lon'].values[time_id],
-                                data_xarray['lat'].values[time_id],10,
-                                data_xarray['age'].values[time_id]/86400, vmin=0,vmax=5))
-        if polys[0] is not None:
-            scatpolys.append(axs[i].scatter(np.array(poly1)[:,0],np.array(poly1)[:,1] ))
-
-    clb3 =plt.colorbar(scats[i])
-    clb3.ax.set_xlabel('Age [d]')
-
-    t = np.datetime_as_string(timerange[0], unit='m')
-    title = axs[0].set_title('Particles at t = '+t)
-
-    def animate(i):
-        t = np.datetime_as_string(timerange[i], unit='m')
-        title.set_text('Particles at t = '+t)
-        
-        time_id = np.where((data_xarray['time'] >= timerange[i]) & (data_xarray['time'] < timerange[i+1]))
-        
-        
-        for i,ext in enumerate(exts):  
-            scats[i].set_offsets(np.c_[data_xarray['lon'].values[time_id], data_xarray['lat'].values[time_id]])
-            scats[i].set_array(data_xarray['age'][time_id]/86400)
-        
-    anim = FuncAnimation(fig, animate, frames = len(timerange)-1, interval=500)
-
-    from IPython.display import HTML
-    HTML(anim.to_jshtml())
-    anim.save('GAL1.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
-'''
 
 

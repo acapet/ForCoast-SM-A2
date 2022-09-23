@@ -4,7 +4,7 @@ username: galway
 sourcenames: ['Source'] # 
 
 # Targets coordinates are given in targets.txt - having this separate is required for bash interpretation.
-targetnames: ['My farm']
+targetnames: ['My farm1','My farm2']
 
 #########################
 # INPUTS FOR PROCESSING #
